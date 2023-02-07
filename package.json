@@ -8,6 +8,10 @@
     "start": "cross-env BOT_TOKEN=5822388669:AAEPBgZnKwxwJYQucqhUTk5nBnqDe7tC3bo node dist/app.js"
   },
   "author": "M1M0G",
+  "engines": {
+    "node": "17.0",
+    "npm": "8.1"
+  },
   "license": "ISC",
   "devDependencies": {
     "@types/node": "^18.11.18",
