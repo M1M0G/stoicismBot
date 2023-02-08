@@ -5,7 +5,7 @@
   "main": "dist/app.js",
   "scripts": {
     "build": "tsc",
-    "start": "cross-env BOT_TOKEN=5822388669:AAEPBgZnKwxwJYQucqhUTk5nBnqDe7tC3bo node dist/app.js"
+    "start": "node dist/app.js"
   },
   "author": "M1M0G",
   "engines": {
