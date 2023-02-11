@@ -4,15 +4,16 @@ import {getTodayStoicismChapter} from "./parser";
 import schedule from 'node-schedule'
 import * as http from "http";
 import * as crypto from "crypto";
-const bot: Telegraf<Context<Update>> = new Telegraf(process.env.BOT_TOKEN as string);
+const bot: Telegraf<Context<Update>> = new Telegraf(process.env.BOT_TOKEN);
 
 bot.start(async (ctx) => {
     ctx.reply('Ку в этом чатике');
-    schedule.scheduleJob('* * 8 * * *', async () => {
-        const todayChapter = await getTodayStoicismChapter();
-        await bot.telegram.sendMessage(process.env.CHAT_ID as string, `<strong>${todayChapter.day}</strong> ${todayChapter.chapter}`, {parse_mode: "HTML"})
-    })
 });
+
+schedule.scheduleJob('1 * * * * *', async () => {
+    const todayChapter = await getTodayStoicismChapter();
+    await bot.telegram.sendMessage(process.env.CHAT_ID, `<strong>${todayChapter.day}</strong> ${todayChapter.chapter}`, {parse_mode: "HTML"})
+})
 
 bot.help((ctx) => {
     ctx.reply('Send /start to receive a greeting');
