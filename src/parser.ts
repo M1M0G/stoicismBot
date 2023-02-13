@@ -13,7 +13,6 @@ export async function getTodayStoicismChapter(): Promise<{day: string, chapter: 
         if (error) {
             reject(error)
         }
-        console.log(data)
         const ruData = iconv.decode(data, 'win1251')
         if(ruData.includes(currentDate) && ruData.includes(tomorrowDate)){
             const startIndex = ruData.indexOf(currentDate) + currentDate.length;

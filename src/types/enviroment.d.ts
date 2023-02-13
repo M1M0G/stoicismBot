@@ -5,6 +5,7 @@ declare global {
             CHAT_ID: string;
             PORT?: number;
             WEBHOOK_DOMAIN?: string;
+            PROD: boolean;
         }
     }
 }
