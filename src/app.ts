@@ -33,24 +33,19 @@ bot.help((ctx => {
     ctx.reply('Отправьте /start_sending чтобы остановить рассылку')
 }));
 
-if (process.env.PROD === true) {
-    bot.launch( {
-        webhook: {
-            // Public domain for webhook; e.g.: example.com
-            domain: process.env.WEBHOOK_DOMAIN || 'localhost',
+bot.launch( {
+    webhook: {
+        // Public domain for webhook; e.g.: example.com
+        domain: process.env.WEBHOOK_DOMAIN || 'localhost',
 
-            // Port to listen on; e.g.: 8080
-            port: process.env.PORT || 4000,
+        // Port to listen on; e.g.: 8080
+        port: process.env.PORT || 4000,
 
-            // Optional secret to be sent back in a header for security.
-            // e.g.: `crypto.randomBytes(64).toString("hex")`
-            secretToken: crypto.randomBytes(64).toString("hex"),
-        },
-    });
-} else {
-    console.log('DEV')
-    bot.launch()
-}
+        // Optional secret to be sent back in a header for security.
+        // e.g.: `crypto.randomBytes(64).toString("hex")`
+        secretToken: crypto.randomBytes(64).toString("hex"),
+    },
+});
 
 http.createServer()
 
