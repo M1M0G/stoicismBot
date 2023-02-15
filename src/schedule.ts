@@ -1,5 +1,11 @@
 import schedule from "node-schedule";
 
-export function scheduleChapter(func: () => void) {
-    return schedule.scheduleJob('0 29 4 * * *', async () => func());
+const rule = new schedule.RecurrenceRule();
+rule.hour = 8;
+rule.minute = 30;
+rule.tz = 'Asia/Yekaterinburg';
+
+
+export function scheduleChapter(func: () => Promise<void>) {
+    return schedule.scheduleJob(rule, async () => await func());
 }

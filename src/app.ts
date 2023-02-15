@@ -1,10 +1,10 @@
 import {Context, Telegraf} from 'telegraf';
 import {Update} from 'typegram';
-import {getTodayStoicismChapter} from "./parser";
+import {getTodayStoicismChapter, TodayChapter} from "./parser";
 import schedule from 'node-schedule'
 import * as http from "http";
-import * as crypto from "crypto";
 import {scheduleChapter} from "./schedule";
+import * as crypto from "crypto";
 
 const bot: Telegraf<Context<Update>> = new Telegraf(process.env.BOT_TOKEN);
 let job:  schedule.Job | undefined;
@@ -12,28 +12,41 @@ bot.start(async (ctx) => {
     ctx.reply('Ку в этом чатике');
 });
 
+function buildMessage(todayChapter: TodayChapter) {
+    return `<strong> [ ${todayChapter.day} ]   ${todayChapter.title}</strong> \n\n<i>${todayChapter.quote?.text}</i> \n${todayChapter.quote?.author} \n\n${todayChapter.chapter}`
+}
+
 async function sendChapter() {
     const todayChapter = await getTodayStoicismChapter();
-    await bot.telegram.sendMessage(process.env.CHAT_ID, `<strong>${todayChapter.day}</strong> ${todayChapter.chapter}`, {parse_mode: "HTML"})
+    await bot.telegram.sendMessage(process.env.CHAT_ID, buildMessage(todayChapter), {parse_mode: "HTML"})
 }
 
 bot.command('/stop_sending', (ctx) => {
     job?.cancel();
+    job = undefined;
     ctx.reply('Останавливаю рассылку')
 })
 
 bot.command('/start_sending', (ctx) => {
-    job = scheduleChapter(sendChapter);
-    ctx.reply('Запускаю расписание рассылки')
+    if (!job) {
+        job = scheduleChapter(sendChapter);
+        job.getMaxListeners()
+        ctx.reply('Запускаю расписание рассылки')
+    } else {
+        ctx.reply('расписание рассылки уже запущено')
+    }
 })
 
 bot.help((ctx => {
-    ctx.reply('Отправьте /start чтобы начать использовать');
-    ctx.reply('Отправьте /stop_sending чтобы остановить рассылку')
-    ctx.reply('Отправьте /start_sending чтобы остановить рассылку')
+    ctx.reply(`Отправьте /start чтобы начать использовать \nОтправьте /stop_sending чтобы остановить рассылку \nОтправьте /start_sending чтобы остановить рассылку \nОтправьте /send_chapter чтобы получить порцию стоицизма на сегодня`, {parse_mode: 'HTML'});
 }));
 
-bot.launch( {
+bot.command('/send_chapter', async (ctx) => {
+    const todayChapter = await getTodayStoicismChapter();
+    ctx.reply(buildMessage(todayChapter), {parse_mode: "HTML"} )
+})
+
+bot.launch({
     webhook: {
         // Public domain for webhook; e.g.: example.com
         domain: process.env.WEBHOOK_DOMAIN || 'localhost',
@@ -51,9 +64,11 @@ http.createServer()
 
 process.once('SIGINT', () => {
     bot.stop('SIGINT');
-    job?.cancel()
+    schedule.gracefulShutdown()
+        .then(() => process.exit(0))
 });
 process.once('SIGTERM', () => {
     bot.stop('SIGTERM')
-    job?.cancel();
-});
+    schedule.gracefulShutdown()
+        .then(() => process.exit(0))
+})

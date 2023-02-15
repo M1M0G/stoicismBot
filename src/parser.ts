@@ -2,8 +2,22 @@ import {addDays, format} from "date-fns";
 import {ru} from 'date-fns/locale'
 import iconv from 'iconv-lite'
 import * as fs from "fs";
+import * as os from "os";
 
-export async function getTodayStoicismChapter(): Promise<{day: string, chapter: string}> {
+interface Quote {
+    text: string,
+    author: string
+}
+
+export interface TodayChapter {
+    day: string;
+    title: string;
+    chapter: string;
+    quote?: Quote,
+
+}
+
+export async function getTodayStoicismChapter(): Promise<TodayChapter> {
     const currentDate = format(new Date(), 'd MMMM', {locale: ru}).toUpperCase();
     const tomorrowDate = format(addDays(new Date(), 1), 'd MMMM', {locale: ru}).toUpperCase();
 
@@ -17,11 +31,18 @@ export async function getTodayStoicismChapter(): Promise<{day: string, chapter: 
         if(ruData.includes(currentDate) && ruData.includes(tomorrowDate)){
             const startIndex = ruData.indexOf(currentDate) + currentDate.length;
             const endIndex = ruData.indexOf(tomorrowDate);
-            const substr = ruData.slice(startIndex, endIndex);
-            const chapter = substr.replace(/\[(.*?)\]/g, '')
-            resolve({day: currentDate, chapter})
+            const substr = ruData.slice(startIndex, endIndex).replace(/\[(.*?)\]/g, '');
+            const splitAndTrimmed = substr.split(os.EOL).filter(c => c !== '').map(c => c.trim())
+            const chapter = splitAndTrimmed.slice(3, splitAndTrimmed.length - 1).join(' ')
+            const quote = {
+                text: splitAndTrimmed[1],
+                author: splitAndTrimmed[2]
+            }
+            const title = splitAndTrimmed[0]
+
+            resolve({day: currentDate, chapter, title, quote})
         }
-        resolve({day: currentDate, chapter: "Увы, сегодня без стоицизма("})
+        resolve({day: currentDate, title: "День X", chapter: "Увы, сегодня без стоицизма("})
         })
     });
 }
